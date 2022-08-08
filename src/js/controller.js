@@ -1,4 +1,7 @@
 import icons from 'url:../img/icons.svg';
+import 'core-js/stable';
+import 'regenerator-runtime/runtime';
+import * as model from './model';
 const recipeContainer = document.querySelector('.recipe');
 
 const timeout = function (s) {
@@ -13,18 +16,26 @@ const timeout = function (s) {
 
 ///////////////////////////////////////
 const key = 'ebab700f-b90b-4ad4-bd21-740852d2a334';
-
+const renderSpinner = function (parentEl) {
+  const markup = `
+  <div class="spinner">
+          <svg>
+            <use href="${icons}#icon-loader"></use>
+          </svg>
+        </div>
+  `;
+  parentEl.innerHTML = '';
+  parentEl.insertAdjacentHTML('afterbegin', markup);
+};
 const showRecipe = async function () {
   try {
-    const res = await fetch(
-      `https://forkify-api.herokuapp.com/api/v2/recipes/5ed6604591c37cdc054bcd81`
-    );
-    const data = await res.json();
-    if (!res.ok) throw new Error(`${data.message} ${res.status}`);
-    console.log(data);
-    let { recipe } = data.data;
+    const id = window.location.hash.slice(1);
+    if (!id) return;
+    // 1) Loading recipe
+    renderSpinner(recipeContainer);
+    await model.loadRecipe(id);
+    const { recipe } = model.state;
 
-    console.log(recipe);
     // 2) Rendering recipe
     const markup = ` 
             <figure class="recipe__fig">
@@ -138,4 +149,4 @@ const showRecipe = async function () {
 
 showRecipe();
 
-console.log(icons);
+['load', 'hashchange'].forEach(ev => window.addEventListener(ev, showRecipe));
