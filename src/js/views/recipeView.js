@@ -1,27 +1,20 @@
-import icons from 'url:../../img/icons.svg';
 import { Fraction } from 'fractional';
-class RecipeView {
-  #parentElement = document.querySelector('.recipe');
-  #data;
-  #errorMessage = "We couldn't find that recipe. Please try another one!";
-  #successMessage = '';
-  render(data) {
-    this.#data = data;
-    const markup = this.#generateMarkup();
-    this.#clear();
-    this.#parentElement.insertAdjacentHTML('afterbegin', markup);
-  }
-  #clear() {
-    this.#parentElement.innerHTML = '';
-  }
-  #generateMarkup() {
+import icons from 'url:../../img/icons.svg';
+
+import View from './view';
+class RecipeView extends View {
+  _parentElement = document.querySelector('.recipe');
+  _errorMessage = "We couldn't find that recipe. Please try another one!";
+  _successMessage = '';
+
+  _generateMarkup() {
     return ` 
     <figure class="recipe__fig">
-    <img src="${this.#data.image_url}" alt="${
-      this.#data.title
+    <img src="${this._data.image_url}" alt="${
+      this._data.title
     }" class="recipe__img" />
     <h1 class="recipe__title">
-      <span>${this.#data.title}</span>
+      <span>${this._data.title}</span>
     </h1>
   </figure>
 
@@ -31,7 +24,7 @@ class RecipeView {
         <use href="${icons}#icon-clock"></use>
       </svg>
       <span class="recipe__info-data recipe__info-data--minutes">${
-        this.#data.cooking_time
+        this._data.cooking_time
       }</span>
       <span class="recipe__info-text">minutes</span>
     </div>
@@ -40,28 +33,30 @@ class RecipeView {
         <use href="${icons}#icon-users"></use>
       </svg>
       <span class="recipe__info-data recipe__info-data--people">${
-        this.#data.servings
+        this._data.servings
       }</span>
       <span class="recipe__info-text">servings</span>
 
       <div class="recipe__info-buttons">
-        <button class="btn--tiny btn--increase-servings">
+        <button class="btn--tiny btn--update-servings" data-update-to="${
+          this._data.servings - 1
+        }">
           <svg>
             <use href="${icons}#icon-minus-circle"></use>
           </svg>
         </button>
-        <button class="btn--tiny btn--increase-servings">
+        <button class="btn--tiny btn--update-servings" data-update-to="${this
+          ._data.servings++}">
           <svg>
             <use href="${icons}#icon-plus-circle"></use>
           </svg>
         </button>
+      
       </div>
     </div>
 
     <div class="recipe__user-generated">
-      <svg>
-        <use href="${icons}#icon-user"></use>
-      </svg>
+      
     </div>
     <button class="btn--round">
       <svg class="">
@@ -74,7 +69,7 @@ class RecipeView {
     <h2 class="heading--2">Recipe ingredients</h2>
     <ul class="recipe__ingredient-list">
 
-    ${this.#data.ingredients
+    ${this._data.ingredients
       .map(ing => {
         return `
       
@@ -105,13 +100,13 @@ class RecipeView {
     <p class="recipe__directions-text">
       This recipe was carefully designed and tested by
       <span class="recipe__publisher">${
-        this.#data.publisher
+        this._data.publisher
       }</span>. Please check out
       directions at their website.
     </p>
     <a
       class="btn--small recipe__btn"
-      href="${this.#data.source_url}"
+      href="${this._data.source_url}"
       target="_blank"
     >
       <span>Directions</span>
@@ -121,36 +116,13 @@ class RecipeView {
     </a>
   </div>`;
   }
-  renderSpinner() {
-    const markup = `
-    <div class="spinner">
-            <svg>
-              <use href="${icons}#icon-loader"></use>
-            </svg>
-          </div>
-    `;
-    this.#clear();
-    this.#parentElement.insertAdjacentHTML('afterbegin', markup);
-  }
+
   addHandlerRender(handler) {
     ['load', 'hashchange'].forEach(ev => window.addEventListener(ev, handler));
   }
-  renderError(msg = this.#errorMessage) {
-    this.#clear();
-    const markup = `
-    <div class="error">
-            <div>
-              <svg>
-                <use href="${icons}#icon-alert-triangle"></use>
-              </svg>
-            </div>
-            <p>${msg}</p>
-          </div>
-    `;
-    this.#parentElement.insertAdjacentHTML('afterbegin', markup);
-  }
-  renderMessage(msg = this.#successMessage) {
-    this.#clear();
+
+  renderMessage(msg = this._successMessage) {
+    this._clear();
     const markup = `
     <div class="message">
             <div>
@@ -161,7 +133,15 @@ class RecipeView {
             <p>${msg}</p>
           </div>
     `;
-    this.#parentElement.insertAdjacentHTML('afterbegin', markup);
+    this._parentElement.insertAdjacentHTML('afterbegin', markup);
+  }
+  addHandlerUpdateServings(handler) {
+    this._parentElement.addEventListener('click', function (e) {
+      const btn = e.target.closest('.btn--tiny');
+      if (!btn) return;
+      const updateTo = +btn.dataset.updateTo;
+      handler(updateTo);
+    });
   }
 }
 
