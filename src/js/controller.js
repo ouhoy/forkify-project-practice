@@ -60,7 +60,8 @@ const controlSevings = function (newServings) {
   const { recipe } = model.state;
 
   // 2) Rendering recipe
-  recipeView.render(recipe);
+  // recipeView.render(recipe);
+  recipeView.update(recipe);
 };
 
 const init = function () {
